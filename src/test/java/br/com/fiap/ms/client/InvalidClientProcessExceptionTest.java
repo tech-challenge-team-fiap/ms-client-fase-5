@@ -10,7 +10,7 @@ public class InvalidClientProcessExceptionTest {
     public void testExceptionMessage() {
         String expectedTitle = "Error Title";
         String expectedMessage = "This is a test error message.";
-        InvalidClientProcessException exception = new InvalidClientProcessException(expectedTitle, expectedMessage);
+        InvalidClientProcessException exception = new InvalidClientProcessException(expectedTitle);
 
         // Assuming InvalidProcessException or its parent class has getMessage() method that returns a formatted string containing the title and message
         String actualMessage = exception.getMessage();

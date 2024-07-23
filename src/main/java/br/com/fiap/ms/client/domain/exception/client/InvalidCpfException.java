@@ -5,6 +5,6 @@ public class InvalidCpfException extends InvalidClientProcessException {
     private static final String message = "The CPF %s is a invalid number";
 
     public InvalidCpfException(String cpf) {
-        super(tittle, String.format(message, cpf));
+        super(tittle);
     }
 }

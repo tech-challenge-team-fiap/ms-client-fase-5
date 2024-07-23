@@ -5,6 +5,6 @@ public class ClientAlreadyExistsException extends InvalidClientProcessException 
     private static final String message = "The client with CPF %s was already exists";
 
     public ClientAlreadyExistsException(String cpf) {
-        super(tittle, String.format(message, cpf));
+        super(tittle);
     }
 }
