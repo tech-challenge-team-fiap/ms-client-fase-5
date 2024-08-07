@@ -1,6 +1,7 @@
 package br.com.fiap.ms.client.domain.interfaces;
 
 import br.com.fiap.ms.client.application.dto.ClientDto;
+import br.com.fiap.ms.client.application.dto.RemoveSensitiveDataDTO;
 import br.com.fiap.ms.client.domain.exception.InvalidProcessException;
 import br.com.fiap.ms.client.domain.exception.client.ClientNotFoundException;
 import br.com.fiap.ms.client.domain.exception.client.InvalidClientProcessException;
@@ -20,4 +21,6 @@ public interface ClientUseCaseInterface {
     ClientDto register(final ClientDto clientDto) throws InvalidClientProcessException;
 
     ClientDto remove(final String cpf) throws InvalidClientProcessException;
+
+    void removeSensitiveData(final String cpf, final RemoveSensitiveDataDTO sensitiveDataDTO) throws InvalidProcessException;
 }

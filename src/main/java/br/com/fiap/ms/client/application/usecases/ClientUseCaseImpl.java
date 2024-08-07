@@ -1,6 +1,7 @@
 package br.com.fiap.ms.client.application.usecases;
 
 import br.com.fiap.ms.client.application.dto.ClientDto;
+import br.com.fiap.ms.client.application.dto.RemoveSensitiveDataDTO;
 import br.com.fiap.ms.client.domain.exception.InvalidProcessException;
 import br.com.fiap.ms.client.domain.exception.client.ClientNotFoundException;
 import br.com.fiap.ms.client.domain.exception.client.InvalidClientProcessException;
@@ -65,6 +66,11 @@ public class ClientUseCaseImpl extends AbstractClientUseCase implements ClientUs
     public ClientDto remove(String cpf) throws InvalidClientProcessException {
         validateCpf(cpf);
         return clientGatewayImpl.delete(cpf);
+    }
+
+    @Override
+    public void removeSensitiveData(String cpf, RemoveSensitiveDataDTO sensitiveDataDTO) throws InvalidProcessException {
+        clientGatewayImpl.removeSensitiveInformation(cpf, sensitiveDataDTO);
     }
 
     private void checkIfClientAlreadyExists(String cpf) throws InvalidClientProcessException {

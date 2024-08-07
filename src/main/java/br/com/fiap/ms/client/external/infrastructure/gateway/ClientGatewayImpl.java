@@ -2,6 +2,9 @@ package br.com.fiap.ms.client.external.infrastructure.gateway;
 
 import br.com.fiap.ms.client.adapter.gateways.ClientGatewayInterface;
 import br.com.fiap.ms.client.application.dto.ClientDto;
+import br.com.fiap.ms.client.application.dto.RemoveSensitiveDataDTO;
+import br.com.fiap.ms.client.domain.enums.SensitiveData;
+import br.com.fiap.ms.client.domain.exception.InvalidProcessException;
 import br.com.fiap.ms.client.domain.exception.client.ClientAlreadyExistsException;
 import br.com.fiap.ms.client.domain.exception.client.ClientNotFoundException;
 import br.com.fiap.ms.client.domain.exception.client.InvalidClientProcessException;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,5 +111,25 @@ public class ClientGatewayImpl implements ClientGatewayInterface {
         }
 
         return new ClientDto(clientDB.get().getName(), clientDB.get().getCpf(), clientDB.get().getEmail(), clientDB.get().getPhone(), clientDB.get().getDateRegister().toString());
+    }
+
+    @Override
+    public void removeSensitiveInformation(String cpf, RemoveSensitiveDataDTO sensitiveDataDTO) throws InvalidProcessException {
+        Optional<ClientDB> clientUpdateDB = clientRepository.findByCpf(cpf);
+
+        if (!clientUpdateDB.isPresent()) {
+            throw new ClientNotFoundException(cpf);
+        }
+
+        ClientDB client = clientUpdateDB.get();
+
+        if (sensitiveDataDTO.getSensitiveDataList().contains(SensitiveData.NAME)) {
+            client.setName(Base64.getEncoder().encodeToString(client.getName().getBytes()));
+        }
+        if (sensitiveDataDTO.getSensitiveDataList().contains(SensitiveData.PHONE)) {
+            client.setPhone(Base64.getEncoder().encodeToString(client.getPhone().getBytes()));
+        }
+
+        clientRepository.save(client);
     }
 }

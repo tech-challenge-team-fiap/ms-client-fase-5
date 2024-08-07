@@ -1,6 +1,7 @@
 package br.com.fiap.ms.client.adapter.controller;
 
 import br.com.fiap.ms.client.application.dto.ClientDto;
+import br.com.fiap.ms.client.application.dto.RemoveSensitiveDataDTO;
 import br.com.fiap.ms.client.domain.exception.InvalidProcessException;
 import br.com.fiap.ms.client.domain.exception.client.ClientNotFoundException;
 import br.com.fiap.ms.client.domain.interfaces.ClientUseCaseInterface;
@@ -55,6 +56,15 @@ public class ClientController {
         try {
             return ResponseEntity.ok(clientUseCase.findByDocument(cpf));
         } catch (ClientNotFoundException ex) {
+            return ResponseEntity.badRequest().body(problemOf(ex));
+        }
+    }
+
+    public ResponseEntity<?> removeSensitiveData(@PathVariable String cpf, @RequestBody RemoveSensitiveDataDTO sensitiveDataDTO) {
+        try {
+            clientUseCase.removeSensitiveData(cpf, sensitiveDataDTO);
+            return ResponseEntity.noContent().build();
+        } catch (InvalidProcessException ex) {
             return ResponseEntity.badRequest().body(problemOf(ex));
         }
     }
