@@ -9,9 +9,13 @@ import br.com.fiap.ms.client.domain.interfaces.ClientUseCaseInterface;
 import br.com.fiap.ms.client.domain.interfaces.abstracts.AbstractClientUseCase;
 import br.com.fiap.ms.client.domain.model.Client;
 import br.com.fiap.ms.client.external.infrastructure.gateway.ClientGatewayImpl;
+import br.com.fiap.ms.client.external.infrastructure.gateway.ProductClient;
+import br.com.fiap.ms.client.external.infrastructure.gateway.OrderClient;
+import br.com.fiap.ms.client.external.infrastructure.gateway.PaymentQueueConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,11 +25,18 @@ public class ClientUseCaseImpl extends AbstractClientUseCase implements ClientUs
 
     private static final Logger logger = LoggerFactory.getLogger(ClientUseCaseImpl.class);
     private final ClientGatewayImpl clientGatewayImpl;
+    private final ProductClient productClient;
+    private final OrderClient orderClient;
+    private final PaymentQueueConfig paymentQueueConfig;
 
     @Autowired
-    public ClientUseCaseImpl(ClientGatewayImpl clientGatewayImpl) {
+    public ClientUseCaseImpl(ClientGatewayImpl clientGatewayImpl, ProductClient productClient,
+                             OrderClient orderClient, PaymentQueueConfig paymentQueueConfig) {
         super(logger);
         this.clientGatewayImpl = clientGatewayImpl;
+        this.productClient = productClient;
+        this.orderClient = orderClient;
+        this.paymentQueueConfig = paymentQueueConfig;
     }
 
     @Override
@@ -34,7 +45,7 @@ public class ClientUseCaseImpl extends AbstractClientUseCase implements ClientUs
     }
 
     @Override
-    public ClientDto findByCpf(String cpf) throws InvalidProcessException  {
+    public ClientDto findByCpf(String cpf) throws InvalidProcessException {
         return clientGatewayImpl.findByCpf(cpf);
     }
 
@@ -45,7 +56,6 @@ public class ClientUseCaseImpl extends AbstractClientUseCase implements ClientUs
 
     @Override
     public ClientDto edit(ClientDto clientDto) throws InvalidClientProcessException {
-
         validateEmail(clientDto.getEmail());
         validatePhoneNumber(clientDto.getPhone());
 
@@ -58,6 +68,20 @@ public class ClientUseCaseImpl extends AbstractClientUseCase implements ClientUs
         validateEmail(clientDto.getEmail());
         validatePhoneNumber(clientDto.getPhone());
         checkIfClientAlreadyExists(clientDto.getCpf());
+
+        ProductDto product = productClient.getProductById(clientDto.getProductId());
+        if (product == null) {
+            throw new InvalidClientProcessException("Product not found");
+        }
+
+        OrderDto orderDto = new OrderDto(clientDto.getProductId(), clientDto.getQuantity());
+        ResponseEntity<?> response = orderClient.updateStock(orderDto);
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new InvalidClientProcessException("Failed to update stock");
+        }
+
+        PaymentDto paymentDto = new PaymentDto(clientDto.getCpf(), clientDto.getTotalAmount());
+        paymentQueueConfig.sendPaymentMessage(paymentDto);
 
         return clientGatewayImpl.register(new Client(clientDto));
     }
@@ -74,6 +98,11 @@ public class ClientUseCaseImpl extends AbstractClientUseCase implements ClientUs
     }
 
     private void checkIfClientAlreadyExists(String cpf) throws InvalidClientProcessException {
-        this.clientGatewayImpl.findByCpf(cpf);
+        try {
+            clientGatewayImpl.findByCpf(cpf);
+        } catch (ClientNotFoundException e) {
+            return;
+        }
+        throw new InvalidClientProcessException("Client with CPF " + cpf + " already exists.");
     }
 }

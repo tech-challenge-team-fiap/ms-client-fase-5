@@ -4,7 +4,7 @@ import br.com.fiap.ms.client.domain.exception.InvalidProcessException;
 
 public class InvalidClientProcessException extends InvalidProcessException {
 
-    public InvalidClientProcessException(String tittle, String message) {
+    public InvalidClientProcessException(String tittle) {
         super(tittle, message);
     }
 }
