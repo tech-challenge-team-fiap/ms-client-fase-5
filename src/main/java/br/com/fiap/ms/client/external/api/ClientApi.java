@@ -2,7 +2,7 @@ package br.com.fiap.ms.client.external.api;
 
 import br.com.fiap.ms.client.adapter.controller.ClientController;
 import br.com.fiap.ms.client.application.dto.ClientDto;
-import org.apache.http.HttpStatus;
+import br.com.fiap.ms.client.application.dto.RemoveSensitiveDataDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +49,10 @@ public class ClientApi {
 //    @Transactional
     public ResponseEntity<?> findByDocument(@PathVariable String cpf) {
         return clientController.findByDocument(cpf);
+    }
+
+    @PostMapping("/remove/data/{cpf}")
+    public ResponseEntity<?> removeSensitiveData(@PathVariable("cpf") String cpf, @RequestBody RemoveSensitiveDataDTO sensitiveDataDTO) {
+        return clientController.removeSensitiveData(cpf, sensitiveDataDTO);
     }
 }
